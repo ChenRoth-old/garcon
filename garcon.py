@@ -4,6 +4,7 @@
 from selenium import webdriver
 import argparse
 import menu
+from selenium.common.exceptions import NoSuchElementException
 
 import constants
 
@@ -13,7 +14,9 @@ class Garcon:
     def __init__(self, url, show_browser=False):
         self.url = url
         self.browser = \
-            webdriver.Firefox() if show_browser else webdriver.PhantomJS()
+            webdriver.Firefox() if show_browser \
+            else webdriver.PhantomJS(constants.PHANTOMJS_PATH)
+        self.browser.implicitly_wait(10)  # seconds
         self.browser.get(self.url)
 
     def _type_input(self, id, value):
@@ -30,6 +33,14 @@ class Garcon:
         login_button.click()
 
     def order_the_usual(self):
+        self.browser.find_element_by_id(constants.PREV_ORDERS_ID).click()
+        try:
+            self.browser.find_element_by_id(constants.FIRST_PREV_ORDER_ID). \
+                click()
+        except NoSuchElementException:
+            print 'You have no previous orders'
+            return
+        self.browser.find_element_by_id(constants.SAVE_ORDER_ID).click()
         print "ordered the usual!"
 
 
